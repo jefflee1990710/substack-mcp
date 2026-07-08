@@ -26,6 +26,13 @@ import {getPublishedPostsSchema, getPublishedPostsHandler} from "./tools/get_pub
 import {deleteDraftSchema, deleteDraftHandler} from "./tools/delete_draft.js";
 import {deletePostSchema, deletePostHandler} from "./tools/delete_post.js";
 import {publishDraftSchema, publishDraftHandler} from "./tools/publish_draft.js";
+import {getReaderFeedSchema, getReaderFeedHandler} from "./tools/get_reader_feed.js";
+import {getProfileFeedSchema, getProfileFeedHandler} from "./tools/get_profile_feed.js";
+import {getCommentThreadSchema, getCommentThreadHandler} from "./tools/get_comment_thread.js";
+import {replyToNoteSchema, replyToNoteHandler} from "./tools/reply_to_note.js";
+import {restackItemSchema, restackItemHandler} from "./tools/restack_item.js";
+import {getPostCommentsSchema, getPostCommentsHandler} from "./tools/get_post_comments.js";
+import {commentOnPostSchema, commentOnPostHandler} from "./tools/comment_on_post.js";
 
 
 // Create an MCP server
@@ -134,6 +141,41 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "add_tag_to_post",
         description: "Add a tag to a specific post (creates the tag if it doesn't exist).",
         inputSchema: zodToJsonSchema(addTagToPostSchema),
+      },
+      {
+        name: "get_reader_feed",
+        description: "Read the authenticated user's Substack Notes home feed (for-you, subscribed, etc). Returns notes, posts, restacks with pagination.",
+        inputSchema: zodToJsonSchema(getReaderFeedSchema),
+      },
+      {
+        name: "get_profile_feed",
+        description: "Read a user's profile activity feed (their notes, restacks, and comments). Defaults to your account.",
+        inputSchema: zodToJsonSchema(getProfileFeedSchema),
+      },
+      {
+        name: "get_comment_thread",
+        description: "Read a Note/comment thread: the item, parent comments, and reply branches.",
+        inputSchema: zodToJsonSchema(getCommentThreadSchema),
+      },
+      {
+        name: "reply_to_note",
+        description: "Reply to a Substack Note or comment on the global Notes feed.",
+        inputSchema: zodToJsonSchema(replyToNoteSchema),
+      },
+      {
+        name: "restack_item",
+        description: "Restack a Note/comment or post to your feed.",
+        inputSchema: zodToJsonSchema(restackItemSchema),
+      },
+      {
+        name: "get_post_comments",
+        description: "Read reader comments left on a published post in your publication.",
+        inputSchema: zodToJsonSchema(getPostCommentsSchema),
+      },
+      {
+        name: "comment_on_post",
+        description: "Leave a reader comment on a published post in your publication.",
+        inputSchema: zodToJsonSchema(commentOnPostSchema),
       }
     ],
   };
@@ -213,6 +255,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "add_tag_to_post": {
         const result = await addTagToPostHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_reader_feed": {
+        const result = await getReaderFeedHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_profile_feed": {
+        const result = await getProfileFeedHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_comment_thread": {
+        const result = await getCommentThreadHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "reply_to_note": {
+        const result = await replyToNoteHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "restack_item": {
+        const result = await restackItemHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_post_comments": {
+        const result = await getPostCommentsHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "comment_on_post": {
+        const result = await commentOnPostHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       default:

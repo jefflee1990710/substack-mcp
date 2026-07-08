@@ -5,7 +5,7 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools (16 Tools)
+## 🛠 Available Tools (23 Tools)
 
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
@@ -38,6 +38,18 @@ This server exposes undocumented Substack internal APIs to allow full automation
 | **`update_user_profile`** | Updates the author's user profile details (display name, bio, profile picture). | `name` (string, opt)<br>`bio` (string, opt)<br>`photo_url` (string, opt) |
 | **`update_payment_settings`** | Updates publication payment/subscription settings (benefits, paywall, founding plan). | `paid_subscription_benefits` (string[])<br>`free_subscription_benefits` (string[])<br>`founding_plan_enabled` (boolean)... |
 | **`get_stats`** | Retrieves the latest statistics for your publication including total subscribers and 90-day growth network attribution. | *None* |
+
+### Notes Feed & Threads
+
+| Tool Name | Description | Inputs |
+|-----------|-------------|--------|
+| **`get_reader_feed`** | Read your Substack Notes home feed (notes, posts, restacks). | `tab` (string, opt)<br>`cursor` (string, opt)<br>`limit` (number, opt)<br>`include_tabs` (boolean, opt) |
+| **`get_profile_feed`** | Read a user's profile activity (notes, restacks, comments). | `user_id` (number, opt)<br>`cursor` (string, opt)<br>`limit` (number, opt) |
+| **`get_comment_thread`** | Read a Note/comment and its parent chain + reply branches. | `comment_id` (string/number)<br>`include_replies` (boolean, opt) |
+| **`reply_to_note`** | Reply to a Note or comment on the global Notes feed. | `parent_comment_id` (string/number)<br>`body` (string) |
+| **`restack_item`** | Restack a Note/comment or post to your feed. | `comment_id` OR `post_id` (one required)<br>`tab_id` (string, opt) |
+| **`get_post_comments`** | Read comments left on a published post. | `post_id` (string/number)<br>`limit` (number, opt) |
+| **`comment_on_post`** | Leave a reader comment on a published post. | `post_id` (string/number)<br>`body` (string) |
 
 
 ## 🧠 Guideline for LLMs: Converting Markdown to ProseMirror JSON
@@ -155,6 +167,7 @@ If you prefer not to use the local source files, you can use NPX or Docker:
 This project contains an interactive tool to reverse-engineer new Substack API endpoints:
 ```bash
 yarn explore /publish/settings
+yarn explore /notes
 ```
 It launches a Chromium browser with your injected tokens. Any configuration change you make will log the exact API payload and URL to your terminal, allowing you to easily build new MCP tools.
 

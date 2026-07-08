@@ -128,4 +128,74 @@ export default class SubstackApi {
     const response = await this.session.put(url, updateData);
     return SubstackApi.handleResponse(response);
   }
+
+  // --- Reader feed (Notes home, profile activity, threads) ---
+
+  async getReaderFeed({ tab, cursor, limit } = {}) {
+    const params = {};
+    if (tab) params.tab = tab;
+    if (cursor) params.cursor = cursor;
+    if (limit) params.limit = limit;
+    const response = await this.session.get(`${this.base_url}/reader/feed`, {
+      params,
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async getReaderFeedTabs() {
+    const response = await this.session.get(`${this.base_url}/reader/feed/tabs`, {
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async getProfileFeed(userId, { cursor, limit } = {}) {
+    const params = {};
+    if (cursor) params.cursor = cursor;
+    if (limit) params.limit = limit;
+    const response = await this.session.get(`${this.base_url}/reader/feed/profile/${userId}`, {
+      params,
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async getComment(commentId) {
+    const response = await this.session.get(`${this.base_url}/reader/comment/${commentId}`, {
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async getCommentReplies(commentId) {
+    const response = await this.session.get(`${this.base_url}/reader/comment/${commentId}/replies`, {
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async restackFeedItem({ postId = null, commentId = null, tabId = 'for-you' } = {}) {
+    const response = await this.session.post(`${this.base_url}/restack/feed`, {
+      postId,
+      commentId,
+      tabId,
+      surface: 'feed',
+    }, {
+      headers: { referer: 'https://substack.com/notes' },
+    });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async getPostComments(postId, { limit = 50 } = {}) {
+    const url = `${this.publication_url}/post/${postId}/comments`;
+    const response = await this.session.get(url, { params: { all_comments: true, limit } });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async commentOnPost(postId, body) {
+    const url = `${this.publication_url}/post/${postId}/comment`;
+    const response = await this.session.post(url, { body });
+    return SubstackApi.handleResponse(response);
+  }
 }

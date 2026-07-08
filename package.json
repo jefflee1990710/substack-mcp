@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node src/index.js",
     "explore": "node scripts/api_explorer.js",
-    "test:note": "node scripts/test_create_note.js"
+    "test:note": "node scripts/test_create_note.js",
+    "test:reader": "node scripts/test_reader_feed.js"
   },
   "repository": {
     "type": "git",

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-An MCP (Model Context Protocol) server exposing 16 tools for automating a Substack publication (drafts, posts, notes, tags, profile/publication settings, stats). Single-package ESM Node.js, plain JavaScript — no TypeScript, no build step, no tests, no linter.
+An MCP (Model Context Protocol) server exposing 23 tools for automating a Substack publication (drafts, posts, notes, tags, profile/publication settings, stats, reader feed/threads). Single-package ESM Node.js, plain JavaScript — no TypeScript, no build step, no tests, no linter.
 
 ## Commands
 
