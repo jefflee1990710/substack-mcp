@@ -13,6 +13,9 @@ import {updatePublicationSchema, updatePublicationHandler} from "./tools/update_
 import {getPublicationSchema, getPublicationHandler} from "./tools/get_publication.js";
 import {getUserProfileSchema, getUserProfileHandler} from "./tools/get_user_profile.js";
 import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_user_profile.js";
+import {getPostTagsSchema, getPostTagsHandler} from "./tools/get_post_tags.js";
+import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.js";
+
 
 import {getDraftsSchema, getDraftsHandler} from "./tools/get_drafts.js";
 import {getPublishedPostsSchema, getPublishedPostsHandler} from "./tools/get_published_posts.js";
@@ -91,6 +94,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description: "Update the user's profile settings (like name, bio, photo_url).",
         inputSchema: zodToJsonSchema(updateUserProfileSchema),
       }
+
+      ,{
+        name: "get_post_tags",
+        description: "Get all available tags for the publication.",
+        inputSchema: zodToJsonSchema(getPostTagsSchema),
+      },
+      {
+        name: "add_tag_to_post",
+        description: "Add a tag to a specific post (creates the tag if it doesn't exist).",
+        inputSchema: zodToJsonSchema(addTagToPostSchema),
+      }
     ],
   };
 });
@@ -140,6 +154,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "update_user_profile": {
         const result = await updateUserProfileHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      
+      case "get_post_tags": {
+        const result = await getPostTagsHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "add_tag_to_post": {
+        const result = await addTagToPostHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       default:

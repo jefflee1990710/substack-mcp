@@ -70,6 +70,27 @@ export default class SubstackApi {
     return SubstackApi.handleResponse(response);
   }
 
+  
+  // --- Publication Tags & Categories ---
+
+  async getPublicationPostTags() {
+    const url = `${this.publication_url}/post_tags`;
+    const response = await this.session.get(url);
+    return SubstackApi.handleResponse(response);
+  }
+
+  async createPostTag(tagName) {
+    const url = `${this.publication_url}/publication/post-tag`;
+    const response = await this.session.post(url, { name: tagName });
+    return SubstackApi.handleResponse(response);
+  }
+
+  async addTagToPost(postId, tagId) {
+    const url = `${this.publication_url}/post/${postId}/tag/${tagId}`;
+    const response = await this.session.post(url, {});
+    return SubstackApi.handleResponse(response);
+  }
+
   // --- Publication Profile ---
 
   async getPublication() {
