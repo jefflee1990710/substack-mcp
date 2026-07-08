@@ -99,10 +99,24 @@ This server exposes undocumented Substack internal APIs to allow full automation
 
 ## 📋 Requirements
 
-To use this server, you need three credentials from your Substack account:
-- `SUBSTACK_PUBLICATION_URL`: E.g., `https://your-pub.substack.com`
-- `SUBSTACK_SESSION_TOKEN`: The value of your `substack.sid` cookie.
-- `SUBSTACK_USER_ID`: Your numeric user ID.
+To use this server, you need three credentials from your Substack account. Here is how to obtain them:
+
+1. **`SUBSTACK_PUBLICATION_URL`**
+   - The URL of your publication (e.g., `https://your-pub.substack.com`).
+
+2. **`SUBSTACK_SESSION_TOKEN`**
+   - Log into Substack in your browser (Chrome, Edge, or Firefox).
+   - Open Developer Tools (Press `F12` or `Right-Click` -> `Inspect`).
+   - Go to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox).
+   - In the left sidebar, expand **Cookies** and click on `https://substack.com` (or your publication URL).
+   - Find the cookie named **`substack.sid`**.
+   - Copy its Value (it usually starts with `s:`). This is your Session Token.
+
+3. **`SUBSTACK_USER_ID`**
+   - While still logged in, open Developer Tools and go to the **Network** tab.
+   - Refresh the page and filter the requests by typing `self` in the search box.
+   - Look for a request to `https://substack.com/api/v1/user/profile/self`.
+   - Click on it, go to the **Response** (or Preview) tab, and find the `"id"` field. That numeric value is your User ID.
 
 ## 🔌 Installation (Client Configuration)
 
