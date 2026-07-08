@@ -104,8 +104,22 @@ export default class SubstackApi {
   }
 
   async getUserProfile() {
-    const url = `${this.base_url}/user/profile/self`; 
+    const url = `${this.base_url}/user/profile/self`;
     const response = await this.session.get(url);
+    return SubstackApi.handleResponse(response);
+  }
+
+  // Uploads an image to Substack's media store and returns { id, url, ... }.
+  // `image` may be a base64 data URL or a public http(s) URL; Substack rehosts
+  // it to its own S3 bucket. Profile photos and publication logos must point at
+  // a Substack-hosted URL (an arbitrary external URL does not render), so callers
+  // should route images through here before setting photo_url / logo_url.
+  async uploadImage(image) {
+    const url = `${this.base_url}/image`;
+    const response = await this.session.post(url, { image }, {
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
     return SubstackApi.handleResponse(response);
   }
 
