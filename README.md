@@ -65,6 +65,8 @@ Substack's API strictly requires the `body` to be a serialized ProseMirror JSON 
 ```
 *(Marks supported: `strong`, `em`, `code`, `link` (requires `attrs.href`))*
 
+**Warning on Marks**: Do not wrap inline code elements with `type: "code"` at the top level. Inline marks are ALWAYS applied to a `type: "text"` element. e.g. `{"type": "text", "text": "print", "marks": [{"type": "code"}]}`. Doing this incorrectly will crash the Substack editor.
+
 ## 📋 Requirements
 
 
