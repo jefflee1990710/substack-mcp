@@ -13,7 +13,7 @@ This server exposes undocumented Substack internal APIs to allow full automation
 
 | Tool Name | Description | Inputs |
 |-----------|-------------|--------|
-| **`create_draft_post`** | Creates a new draft post in your publication. | `title` (string)<br>`subtitle` (string)<br>`body` (string, ProseMirror JSON) |
+| **`create_draft_post`** | Creates a new draft post in your publication. | `title` (string)<br>`subtitle` (string)<br>`body` (string, ProseMirror JSON)<br>*(Markdown must be converted to ProseMirror AST)* |
 | **`get_drafts`** | Retrieves a paginated list of all unpublished drafts. | `offset` (number, opt)<br>`limit` (number, opt) |
 | **`create_short_post`** | Creates and instantly publishes a short-form post (acting exactly like a Substack Note). | `body` (string)<br>`hide_from_feed` (boolean) |
 | **`get_published_posts`** | Retrieves a paginated list of all currently published posts. | `offset` (number, opt)<br>`limit` (number, opt) |
@@ -38,7 +38,35 @@ This server exposes undocumented Substack internal APIs to allow full automation
 | **`update_user_profile`** | Updates the author's user profile details (display name, bio, profile picture). | `name` (string, opt)<br>`bio` (string, opt)<br>`photo_url` (string, opt) |
 | **`update_payment_settings`** | Updates publication payment/subscription settings (benefits, paywall, founding plan). | `paid_subscription_benefits` (string[])<br>`free_subscription_benefits` (string[])<br>`founding_plan_enabled` (boolean)... |
 
+
+## 🧠 Guideline for LLMs: Converting Markdown to ProseMirror JSON
+Substack's API strictly requires the `body` to be a serialized ProseMirror JSON object. **Do not send raw Markdown.** When using `create_draft_post` or `create_short_post`, the AI must construct the JSON AST.
+
+**Example AST Construction:**
+```json
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "This is " },
+        { "type": "text", "text": "bold", "marks": [{ "type": "strong" }] },
+        { "type": "text", "text": " and " },
+        { "type": "text", "text": "inline code", "marks": [{ "type": "code" }] }
+      ]
+    },
+    {
+      "type": "code_block",
+      "content": [{ "type": "text", "text": "print('Hello World')" }]
+    }
+  ]
+}
+```
+*(Marks supported: `strong`, `em`, `code`, `link` (requires `attrs.href`))*
+
 ## 📋 Requirements
+
 
 To use this server, you need three credentials from your Substack account. Here is how to obtain them:
 
