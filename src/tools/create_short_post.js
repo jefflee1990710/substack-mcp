@@ -2,12 +2,13 @@ import {z} from "zod";
 import SubstackApi from "../api/substack/SubstackApi.js";
 
 export const createShortPostSchema = z.object({
+  title: z.string().optional().describe("The title of the short post. Defaults to 'Solo Quant Quick Thought' if not provided."),
   body: z.string().describe("The content of your short post. This acts exactly like a Note in your publication feed."),
   hide_from_feed: z.boolean().optional().describe("Hide the short post from the main feed? (default: false)"),
 });
 
 export const createShortPostHandler = async (args) => {
-  const {body, hide_from_feed = false} = createShortPostSchema.parse(args);
+  const {title, body, hide_from_feed = false} = createShortPostSchema.parse(args);
 
   const substack_api = new SubstackApi({
     publication_url: process.env.SUBSTACK_PUBLICATION_URL,
@@ -20,7 +21,7 @@ export const createShortPostHandler = async (args) => {
   
   // 1. Create a draft with title "." (Substack requires a title, but rendering ignores it if it's a short post format or we keep it minimal)
   const draftBody = {
-    draft_title: 'Solo Quant Quick Thought', 
+    draft_title: title || 'Solo Quant Quick Thought', 
     draft_subtitle: '',
     draft_body: JSON.stringify({
       type: 'doc',

@@ -5,7 +5,7 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools (15 Tools)
+## 🛠 Available Tools (16 Tools)
 
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 

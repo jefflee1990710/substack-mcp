@@ -16,6 +16,7 @@ import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_
 import {updatePaymentSettingsSchema, updatePaymentSettingsHandler} from "./tools/update_payment_settings.js";
 import {createShortPostSchema, createShortPostHandler} from "./tools/create_short_post.js";
 import {getStatsSchema, getStatsHandler} from "./tools/get_stats.js";
+import {createNoteSchema, createNoteHandler} from "./tools/create_note.js";
 import {getPostTagsSchema, getPostTagsHandler} from "./tools/get_post_tags.js";
 import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.js";
 
@@ -117,6 +118,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "get_stats",
         description: "Get the latest statistics for your publication (subscriber count and growth attribution).",
         inputSchema: zodToJsonSchema(getStatsSchema),
+      },
+      {
+        name: "create_note",
+        description: "Create and publish a genuine Substack Note to the global feed.",
+        inputSchema: zodToJsonSchema(createNoteSchema),
       }
 
       ,{
@@ -194,6 +200,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "get_stats": {
         const result = await getStatsHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "create_note": {
+        const result = await createNoteHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       
