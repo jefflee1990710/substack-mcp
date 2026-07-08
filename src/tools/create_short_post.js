@@ -20,7 +20,7 @@ export const createShortPostHandler = async (args) => {
   
   // 1. Create a draft with title "." (Substack requires a title, but rendering ignores it if it's a short post format or we keep it minimal)
   const draftBody = {
-    draft_title: '.', 
+    draft_title: 'Solo Quant Quick Thought', 
     draft_subtitle: '',
     draft_body: JSON.stringify({
       type: 'doc',
