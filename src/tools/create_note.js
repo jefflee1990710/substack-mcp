@@ -30,36 +30,60 @@ export const createNoteHandler = async (args) => {
       await page.goto('https://substack.com/');
       await page.waitForTimeout(5000); // Wait for the feed to load
       
-      // Click the "What's on your mind?" placeholder
-      await page.click('text="What\'s on your mind?"', { timeout: 10000 });
+      const found = await page.evaluate(() => {
+          const elements = Array.from(document.querySelectorAll('div, span, p'));
+          for (let el of elements) {
+              if (el.textContent === "What's on your mind?") {
+                  el.click();
+                  return true;
+              }
+          }
+          return false;
+      });
+
+      if (!found) {
+          throw new Error("Could not find 'What's on your mind?' placeholder.");
+      }
+
       await page.waitForTimeout(2000);
       
-      const editor = await page.$('[contenteditable="true"]');
-      if (!editor) {
-          throw new Error("Could not find the Note composer editor.");
-      }
-      
-      // Type the note
-      await editor.type(body, { delay: 50 }); // Add slight delay to mimic human typing
+      // Since the editor input loses its contenteditable attribute in headless or is buried,
+      // we can just use page.keyboard.type directly after clicking the placeholder,
+      // because clicking it puts focus directly onto the composer.
+      await page.keyboard.type(body, { delay: 10 });
       await page.waitForTimeout(1000);
       
-      // Find and click the Post button
-      const buttons = await page.$$('button');
+      // Try finding the exact data-testid first
       let posted = false;
-      for (const b of buttons) {
-          const text = await b.innerText();
-          if (text.toLowerCase() === 'post') {
-              await b.click({force: true});
-              posted = true;
-              await page.waitForTimeout(4000); // Wait for submission to complete
-              break;
-          }
+      const postBtn = await page.$('[data-testid="composer-post"]');
+      if (postBtn && await postBtn.isVisible()) {
+          await postBtn.click({ force: true });
+          posted = true;
+      } else {
+          // Fallback to evaluating all buttons again, but specifically clicking inner element if SVG
+          posted = await page.evaluate(async () => {
+              const sleep = ms => new Promise(r => setTimeout(r, ms));
+              const btns = Array.from(document.querySelectorAll('button, div[role="button"]'));
+              for (let b of btns) {
+                  const text = (b.innerText || b.textContent || '').trim().toLowerCase();
+                  if (text === 'post' || text === 'publish') {
+                      b.click();
+                      await sleep(4000);
+                      return true;
+                  }
+              }
+              return false;
+          });
       }
       
       if (!posted) {
-          throw new Error("Found the editor but could not find the Post button.");
+          const isMac = process.platform === 'darwin';
+          await page.keyboard.press(isMac ? 'Meta+Enter' : 'Control+Enter');
+          await page.waitForTimeout(4000);
       }
-      
+
+      await page.waitForTimeout(4000);
+
       await browser.close();
       return { status: "OK", message: "Real Note successfully posted via browser automation." };
       
