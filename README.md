@@ -5,7 +5,7 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools (14 Tools)
+## 🛠 Available Tools (15 Tools)
 
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
@@ -37,6 +37,7 @@ This server exposes undocumented Substack internal APIs to allow full automation
 | **`get_user_profile`** | Retrieves the author's personal user profile details. | *None* |
 | **`update_user_profile`** | Updates the author's user profile details (display name, bio, profile picture). | `name` (string, opt)<br>`bio` (string, opt)<br>`photo_url` (string, opt) |
 | **`update_payment_settings`** | Updates publication payment/subscription settings (benefits, paywall, founding plan). | `paid_subscription_benefits` (string[])<br>`free_subscription_benefits` (string[])<br>`founding_plan_enabled` (boolean)... |
+| **`get_stats`** | Retrieves the latest statistics for your publication including total subscribers and 90-day growth network attribution. | *None* |
 
 
 ## 🧠 Guideline for LLMs: Converting Markdown to ProseMirror JSON

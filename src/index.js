@@ -15,6 +15,7 @@ import {getUserProfileSchema, getUserProfileHandler} from "./tools/get_user_prof
 import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_user_profile.js";
 import {updatePaymentSettingsSchema, updatePaymentSettingsHandler} from "./tools/update_payment_settings.js";
 import {createShortPostSchema, createShortPostHandler} from "./tools/create_short_post.js";
+import {getStatsSchema, getStatsHandler} from "./tools/get_stats.js";
 import {getPostTagsSchema, getPostTagsHandler} from "./tools/get_post_tags.js";
 import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.js";
 
@@ -111,6 +112,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "create_short_post",
         description: "Create and publish a short post (acts identically to a Note on your publication feed).",
         inputSchema: zodToJsonSchema(createShortPostSchema),
+      },
+      {
+        name: "get_stats",
+        description: "Get the latest statistics for your publication (subscriber count and growth attribution).",
+        inputSchema: zodToJsonSchema(getStatsSchema),
       }
 
       ,{
@@ -184,6 +190,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "create_short_post": {
         const result = await createShortPostHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_stats": {
+        const result = await getStatsHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       
