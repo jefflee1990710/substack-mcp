@@ -14,6 +14,14 @@ export const updatePublicationSchema = z.object({
     .string()
     .optional()
     .describe("The URL of the publication's logo image."),
+  copyright: z
+    .string()
+    .optional()
+    .describe("The copyright text usually displayed in footers."),
+  email_from_name: z
+    .string()
+    .optional()
+    .describe("The 'From' name used when sending emails to subscribers."),
 });
 
 export const updatePublicationHandler = async (args) => {
