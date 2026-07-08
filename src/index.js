@@ -143,7 +143,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "create_note",
-        description: "Create and publish a genuine Substack Note to the global feed.",
+        description: "Create and publish a genuine Substack Note to the global feed, optionally attaching up to 4 images (local path, URL, or data URL).",
         inputSchema: zodToJsonSchema(createNoteSchema),
       },
       {

@@ -1,6 +1,7 @@
 import {z} from "zod";
 import { chromium } from "playwright-extra";
 import stealth from "puppeteer-extra-plugin-stealth";
+import { toImagePayload } from "../utils/image.js";
 
 // Substack Notes sit behind Cloudflare bot management. A plain axios call — or even a
 // normal (automation-flagged) Chromium — gets a 403 Cloudflare JS challenge on
@@ -12,6 +13,7 @@ chromium.use(stealth());
 
 export const createNoteSchema = z.object({
   body: z.string().min(1).describe("The content of the Note. This is posted to the global Substack Notes feed. Blank lines start new paragraphs."),
+  images: z.array(z.string()).max(4).optional().describe("Optional images to attach (max 4). Each item may be a local file path, an http(s) URL, or a data URL."),
 });
 
 // Build the ProseMirror doc Substack's Notes composer sends. Blank lines split paragraphs.
@@ -25,12 +27,16 @@ function buildBodyJson(body) {
 }
 
 export const createNoteHandler = async (args) => {
-  const { body } = createNoteSchema.parse(args);
+  const { body, images } = createNoteSchema.parse(args);
 
   const token = process.env.SUBSTACK_SESSION_TOKEN;
   if (!token) {
     throw new Error("Missing SUBSTACK_SESSION_TOKEN environment variable");
   }
+
+  // Normalize image sources up front (reads local files, validates extensions)
+  // so bad input fails before we pay for a browser launch.
+  const imagePayloads = (images ?? []).map(toImagePayload);
 
   // Bundled Chromium passes Cloudflare once stealth + cf_clearance are in place, and it
   // starts much faster than a real-Chrome cold launch — so it is the default. Set
@@ -71,23 +77,61 @@ export const createNoteHandler = async (args) => {
       await page.waitForTimeout(2000);
     }
 
+    // Attach images, if any: upload each to Substack's media store, then register
+    // it as a comment attachment. Both run as in-page fetches so they inherit the
+    // same cf_clearance + session cookies as the Note creation itself.
+    const attachmentIds = [];
+    for (const image of imagePayloads) {
+      const attachment = await page.evaluate(async (img) => {
+        const uploadRes = await fetch("https://substack.com/api/v1/image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ image: img }),
+        });
+        let upload = null;
+        try { upload = await uploadRes.json(); } catch { /* non-JSON */ }
+        if (!uploadRes.ok || !upload?.url) {
+          return { error: `image upload failed (HTTP ${uploadRes.status})` };
+        }
+        const attachRes = await fetch("https://substack.com/api/v1/comment/attachment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ type: "image", url: upload.url }),
+        });
+        let attach = null;
+        try { attach = await attachRes.json(); } catch { /* non-JSON */ }
+        if (!attachRes.ok || !attach?.id) {
+          return { error: `attachment creation failed (HTTP ${attachRes.status})` };
+        }
+        return { id: attach.id, imageUrl: attach.imageUrl };
+      }, image);
+      if (attachment.error) {
+        throw new Error(attachment.error);
+      }
+      attachmentIds.push(attachment.id);
+    }
+
     // Create the Note via an in-page fetch so it inherits cf_clearance + session cookies.
-    const result = await page.evaluate(async (bodyJson) => {
+    const result = await page.evaluate(async ({ bodyJson, attachmentIds }) => {
+      const payload = {
+        bodyJson,
+        tabId: "for-you",
+        surface: "feed",
+        replyMinimumRole: "everyone",
+      };
+      if (attachmentIds.length) payload.attachmentIds = attachmentIds;
       const res = await fetch("https://substack.com/api/v1/comment/feed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          bodyJson,
-          tabId: "for-you",
-          surface: "feed",
-          replyMinimumRole: "everyone",
-        }),
+        body: JSON.stringify(payload),
       });
       let json = null;
       try { json = await res.json(); } catch { /* non-JSON (e.g. Cloudflare challenge HTML) */ }
       return { status: res.status, json };
-    }, buildBodyJson(body));
+    }, { bodyJson: buildBodyJson(body), attachmentIds });
 
     if (result.status < 200 || result.status >= 300 || !result.json?.id) {
       throw new Error(
@@ -105,6 +149,7 @@ export const createNoteHandler = async (args) => {
       user_id: note.user_id,
       date: note.date,
       url: note.id ? `https://substack.com/@me/note/c-${note.id}` : undefined,
+      attachment_count: attachmentIds.length || undefined,
     };
   } catch (e) {
     await browser.close();

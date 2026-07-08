@@ -56,12 +56,11 @@ async function deleteNote(noteId) {
   }
 }
 
-async function main() {
-  const marker = `create_note smoke test ${new Date().toISOString()} — auto-deleted`;
-  console.log("→ creating Note …");
+async function runCase(label, args) {
+  console.log(`→ creating Note (${label}) …`);
   const t0 = Date.now();
 
-  const result = await createNoteHandler({ body: marker });
+  const result = await createNoteHandler(args);
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`  tool returned in ${elapsed}s:`, JSON.stringify(result));
 
@@ -69,6 +68,9 @@ async function main() {
   assert.equal(result.status, "OK", "expected status OK");
   assert.ok(Number.isFinite(result.note_id), "expected a numeric note_id");
   assert.equal(String(result.user_id), String(process.env.SUBSTACK_USER_ID), "note_id should belong to the configured user");
+  if (args.images?.length) {
+    assert.equal(result.attachment_count, args.images.length, "expected attachment_count to match images");
+  }
   console.log(`✓ Note created (id ${result.note_id})`);
 
   // Clean up: delete the Note we just created.
@@ -76,8 +78,17 @@ async function main() {
   const delStatus = await deleteNote(result.note_id);
   assert.ok(delStatus >= 200 && delStatus < 300, `expected 2xx from delete, got ${delStatus}`);
   console.log(`✓ Note deleted (HTTP ${delStatus})`);
+}
 
-  console.log("\nPASS — create_note works end-to-end and left nothing behind.");
+async function main() {
+  const stamp = new Date().toISOString();
+  await runCase("text only", { body: `create_note smoke test ${stamp} — auto-deleted` });
+  await runCase("with image", {
+    body: `create_note image smoke test ${stamp} — auto-deleted`,
+    images: [new URL("../assets/sqt_logo.png", import.meta.url).pathname],
+  });
+
+  console.log("\nPASS — create_note works end-to-end (text + image) and left nothing behind.");
 }
 
 main().catch((err) => {

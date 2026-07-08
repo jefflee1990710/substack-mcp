@@ -28,7 +28,7 @@ This server exposes **24 tools** for automating a Substack publication via undoc
 
 | Tool | Description |
 |------|-------------|
-| \`create_note\` | Publish a Note to the global Substack Notes feed (browser automation for Cloudflare). |
+| \`create_note\` | Publish a Note to the global Substack Notes feed, optionally with up to 4 image attachments (browser automation for Cloudflare). |
 | \`get_user_notes\` | List Notes authored by a user via \`GET /reader/feed/profile/{user_id}\`. |
 | \`get_reader_feed\` | Read your Notes home feed (for-you, subscribed, etc.). |
 | \`get_profile_feed\` | Read a user's profile activity (notes, restacks, comments). |
@@ -91,7 +91,7 @@ const CATALOG_ZH_TW = `# Substack MCP 伺服器 — 功能目錄
 
 | 工具 | 說明 |
 |------|------|
-| \`create_note\` | 發佈 Note 到全球 Substack Notes feed。 |
+| \`create_note\` | 發佈 Note 到全球 Substack Notes feed,可附加最多 4 張圖片。 |
 | \`get_user_notes\` | 列出使用者發佈的 Notes。 |
 | \`get_reader_feed\` | 讀取 Notes 首頁 feed（推薦、追蹤中等）。 |
 | \`get_profile_feed\` | 讀取使用者個人動態（notes、restack、留言）。 |

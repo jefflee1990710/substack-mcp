@@ -32,7 +32,7 @@ This server exposes undocumented Substack internal APIs to allow full automation
 |-----------|-------------|--------|
 | **`create_draft_post`** | Creates a new draft post in your publication. | `title` (string)<br>`subtitle` (string)<br>`body` (string, ProseMirror JSON)<br>*(Markdown must be converted to ProseMirror AST)* |
 | **`get_drafts`** | Retrieves a paginated list of all unpublished drafts. | `offset` (number, opt)<br>`limit` (number, opt) |
-| **`create_note`** | Creates and publishes a Note to the global Substack Notes feed. | `body` (string) |
+| **`create_note`** | Creates and publishes a Note to the global Substack Notes feed, optionally with image attachments. | `body` (string)<br>`images` (string[], opt, max 4 — local path, http(s) URL, or data URL) |
 | **`get_user_notes`** | Lists Notes authored by a user (from profile activity). | `user_id` (number, opt)<br>`cursor` (string, opt)<br>`limit` (number, opt) |
 | **`get_published_posts`** | Retrieves a paginated list of all currently published posts. | `offset` (number, opt)<br>`limit` (number, opt) |
 | **`publish_draft`** | Publishes a specific draft immediately to your audience. | `draftId` (string/number)<br>`send` (boolean, def: true)<br>`share_automatically` (boolean, def: false) |
