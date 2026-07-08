@@ -10,3 +10,4 @@ docs/openapi*.json
 /yarn-error.log
 /yarn*/
 .env*
+exploration_logs/
