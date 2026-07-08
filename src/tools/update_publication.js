@@ -1,5 +1,6 @@
 import {z} from "zod";
 import SubstackApi from "../api/substack/SubstackApi.js";
+import {toImagePayload} from "../utils/image.js";
 
 export const updatePublicationSchema = z.object({
   name: z
@@ -13,7 +14,7 @@ export const updatePublicationSchema = z.object({
   logo_url: z
     .string()
     .optional()
-    .describe("The URL of the publication's logo image."),
+    .describe("Publication logo: a local image file path, a public http(s) image URL, or a base64 data URL. It is uploaded to Substack's media store first (a raw external URL would not render), then set as the logo."),
   copyright: z
     .string()
     .optional()
@@ -25,22 +26,28 @@ export const updatePublicationSchema = z.object({
 });
 
 export const updatePublicationHandler = async (args) => {
-  const validatedArgs = updatePublicationSchema.parse(args);
-
-  // Filter out undefined properties so we only send what needs to be updated
-  const updateData = Object.fromEntries(
-    Object.entries(validatedArgs).filter(([_, v]) => v !== undefined)
-  );
-
-  if (Object.keys(updateData).length === 0) {
-    throw new Error("No fields provided to update.");
-  }
+  const {logo_url, ...rest} = updatePublicationSchema.parse(args);
 
   const substack_api = new SubstackApi({
     publication_url: process.env.SUBSTACK_PUBLICATION_URL,
     auth_token: process.env.SUBSTACK_SESSION_TOKEN,
   });
 
-  const response = await substack_api.updatePublication(updateData);
-  return response;
+  // Only send fields that were actually provided.
+  const updateData = Object.fromEntries(
+    Object.entries(rest).filter(([_, v]) => v !== undefined)
+  );
+
+  // Upload the logo to Substack first so it is served through Substack's CDN.
+  // A raw external URL gets stored verbatim and does not render.
+  if (logo_url !== undefined) {
+    const uploaded = await substack_api.uploadImage(toImagePayload(logo_url));
+    updateData.logo_url = uploaded.url;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No fields provided to update.");
+  }
+
+  return await substack_api.updatePublication(updateData);
 };
