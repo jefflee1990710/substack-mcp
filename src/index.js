@@ -13,6 +13,7 @@ import {updatePublicationSchema, updatePublicationHandler} from "./tools/update_
 import {getPublicationSchema, getPublicationHandler} from "./tools/get_publication.js";
 import {getUserProfileSchema, getUserProfileHandler} from "./tools/get_user_profile.js";
 import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_user_profile.js";
+import {updatePaymentSettingsSchema, updatePaymentSettingsHandler} from "./tools/update_payment_settings.js";
 import {getPostTagsSchema, getPostTagsHandler} from "./tools/get_post_tags.js";
 import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.js";
 
@@ -93,6 +94,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "update_user_profile",
         description: "Update the user's profile settings (like name, bio, photo_url).",
         inputSchema: zodToJsonSchema(updateUserProfileSchema),
+      },
+      {
+        name: "update_payment_settings",
+        description: "Update the publication's payment and subscription settings (benefits, founding plan, etc).",
+        inputSchema: zodToJsonSchema(updatePaymentSettingsSchema),
       }
 
       ,{
@@ -154,6 +160,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "update_user_profile": {
         const result = await updateUserProfileHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "update_payment_settings": {
+        const result = await updatePaymentSettingsHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       

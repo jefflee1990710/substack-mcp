@@ -39,7 +39,6 @@ export default class SubstackApi {
     return SubstackApi.handleResponse(response);
   }
 
-  
   async getDrafts(offset = 0, limit = 20) {
     const url = `${this.publication_url}/drafts`;
     const response = await this.session.get(url, { params: { offset, limit } });
@@ -70,7 +69,6 @@ export default class SubstackApi {
     return SubstackApi.handleResponse(response);
   }
 
-  
   // --- Publication Tags & Categories ---
 
   async getPublicationPostTags() {
@@ -99,24 +97,20 @@ export default class SubstackApi {
     return SubstackApi.handleResponse(response);
   }
 
-  async getUserProfile() {
-    const url = `${this.base_url}/user`; // Typically user info is fetched/updated here
-    const response = await this.session.get(url);
-    return SubstackApi.handleResponse(response);
-  }
-
-  
   async updatePublication(updateData) {
-    // Endpoint: PUT https://<your-publication>.substack.com/api/v1/publication
-    // updateData can include: name, hero_text (description), logo_url, etc.
     const url = `${this.publication_url.replace('/api/v1', '')}/api/v1/publication`;
     const response = await this.session.put(url, updateData);
     return SubstackApi.handleResponse(response);
   }
 
+  async getUserProfile() {
+    const url = `${this.base_url}/user/profile/self`; 
+    const response = await this.session.get(url);
+    return SubstackApi.handleResponse(response);
+  }
+
   async updateUserProfile(updateData) {
-    // Usually PUT https://substack.com/api/v1/user/profile or similar
-    const url = `${this.base_url}/user`;
+    const url = `${this.base_url}/user/profile`;
     const response = await this.session.put(url, updateData);
     return SubstackApi.handleResponse(response);
   }
