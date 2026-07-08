@@ -22,6 +22,7 @@ import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.j
 import {getDraftsSchema, getDraftsHandler} from "./tools/get_drafts.js";
 import {getPublishedPostsSchema, getPublishedPostsHandler} from "./tools/get_published_posts.js";
 import {deleteDraftSchema, deleteDraftHandler} from "./tools/delete_draft.js";
+import {deletePostSchema, deletePostHandler} from "./tools/delete_post.js";
 import {publishDraftSchema, publishDraftHandler} from "./tools/publish_draft.js";
 
 
@@ -74,6 +75,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "delete_draft",
         description: "Delete a specific draft by its ID.",
         inputSchema: zodToJsonSchema(deleteDraftSchema),
+      },
+      {
+        name: "delete_post",
+        description: "Delete a specific published post permanently by its ID.",
+        inputSchema: zodToJsonSchema(deletePostSchema),
       },
       {
         name: "publish_draft",
@@ -149,6 +155,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
       case "delete_draft": {
         const result = await deleteDraftHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "delete_post": {
+        const result = await deletePostHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       case "publish_draft": {

@@ -5,7 +5,7 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools (13 Tools)
+## 🛠 Available Tools (14 Tools)
 
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
@@ -19,6 +19,7 @@ This server exposes undocumented Substack internal APIs to allow full automation
 | **`get_published_posts`** | Retrieves a paginated list of all currently published posts. | `offset` (number, opt)<br>`limit` (number, opt) |
 | **`publish_draft`** | Publishes a specific draft immediately to your audience. | `draftId` (string/number)<br>`send` (boolean, def: true)<br>`share_automatically` (boolean, def: false) |
 | **`delete_draft`** | Deletes a specific draft permanently. | `draftId` (string/number) |
+| **`delete_post`** | Deletes a published post permanently. | `postId` (string/number) |
 
 ### Tags Management
 
