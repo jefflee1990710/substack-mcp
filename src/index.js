@@ -35,6 +35,7 @@ import {replyToNoteSchema, replyToNoteHandler} from "./tools/reply_to_note.js";
 import {restackItemSchema, restackItemHandler} from "./tools/restack_item.js";
 import {getPostCommentsSchema, getPostCommentsHandler} from "./tools/get_post_comments.js";
 import {commentOnPostSchema, commentOnPostHandler} from "./tools/comment_on_post.js";
+import {listResourcesSchema, listResourcesHandler} from "./tools/list_resources.js";
 import {listResources, readResource} from "./resources/catalog.js";
 
 
@@ -74,6 +75,12 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      {
+        name: "list_resources",
+        description:
+          "List MCP capability docs (tool catalog, setup guide, ProseMirror guide). Pass uri to read full content (e.g. substack://catalog/zh-TW).",
+        inputSchema: zodToJsonSchema(listResourcesSchema),
+      },
       {
         name: "create_draft_post",
         description:
@@ -204,6 +211,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
+      case "list_resources": {
+        const result = await listResourcesHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
       case "create_draft_post": {
         const result = await createDraftPostHandler(args);
         return {

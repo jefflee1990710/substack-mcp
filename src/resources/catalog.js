@@ -4,7 +4,14 @@ const MIME = "text/markdown; charset=utf-8";
 
 const CATALOG_EN = `# Substack MCP Server — Capability Catalog
 
-This server exposes **23 tools** for automating a Substack publication via undocumented internal APIs.
+This server exposes **24 tools** for automating a Substack publication via undocumented internal APIs.
+
+## Discovery
+
+| Tool / Protocol | Description |
+|-----------------|-------------|
+| \`list_resources\` | **Tool** — list or read capability docs (works in all MCP clients) |
+| \`resources/list\` | **Protocol** — same docs via native MCP resources API |
 
 ## Posts & Drafts
 

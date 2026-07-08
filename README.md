@@ -5,9 +5,9 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools (23 Tools)
+## 🛠 Available Tools (24 Tools)
 
-Use **`resources/list`** to discover capability docs without calling each tool. Key resources:
+Use **`list_resources`** (tool) or **`resources/list`** (MCP protocol) to discover capability docs:
 
 | URI | Description |
 |-----|-------------|
@@ -16,7 +16,13 @@ Use **`resources/list`** to discover capability docs without calling each tool. 
 | `substack://setup` | Environment variables and auth |
 | `substack://guides/prosemirror` | Post body format guide |
 
-Fetch content with **`resources/read`** and the URI above.
+Fetch content with **`list_resources`** `{ "uri": "substack://catalog/zh-TW" }` or **`resources/read`**.
+
+### Discovery
+
+| Tool Name | Description | Inputs |
+|-----------|-------------|--------|
+| **`list_resources`** | List capability docs or read one by URI (tool wrapper for clients without resources support). | `uri` (string, opt) |
 
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
