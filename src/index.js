@@ -9,6 +9,16 @@ import {
 import {z} from "zod";
 import {zodToJsonSchema} from "zod-to-json-schema";
 import {createDraftPostSchema, createDraftPostHandler} from "./tools/create_draft_post.js";
+import {updatePublicationSchema, updatePublicationHandler} from "./tools/update_publication.js";
+import {getPublicationSchema, getPublicationHandler} from "./tools/get_publication.js";
+import {getUserProfileSchema, getUserProfileHandler} from "./tools/get_user_profile.js";
+import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_user_profile.js";
+
+import {getDraftsSchema, getDraftsHandler} from "./tools/get_drafts.js";
+import {getPublishedPostsSchema, getPublishedPostsHandler} from "./tools/get_published_posts.js";
+import {deleteDraftSchema, deleteDraftHandler} from "./tools/delete_draft.js";
+import {publishDraftSchema, publishDraftHandler} from "./tools/publish_draft.js";
+
 
 // Create an MCP server
 const server = new Server({
@@ -37,6 +47,50 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           "create a draft post on your Substack account.",
         inputSchema: zodToJsonSchema(createDraftPostSchema),
       }
+      ,
+      {
+        name: "update_publication",
+        description:
+          "Update the publication settings (like name, description/hero_text, logo_url).",
+        inputSchema: zodToJsonSchema(updatePublicationSchema),
+      }
+
+      ,{
+        name: "get_drafts",
+        description: "Get a list of drafts in the publication.",
+        inputSchema: zodToJsonSchema(getDraftsSchema),
+      },
+      {
+        name: "get_published_posts",
+        description: "Get a list of published posts in the publication.",
+        inputSchema: zodToJsonSchema(getPublishedPostsSchema),
+      },
+      {
+        name: "delete_draft",
+        description: "Delete a specific draft by its ID.",
+        inputSchema: zodToJsonSchema(deleteDraftSchema),
+      },
+      {
+        name: "publish_draft",
+        description: "Publish a draft to the publication and optionally send an email.",
+        inputSchema: zodToJsonSchema(publishDraftSchema),
+      }
+
+      ,{
+        name: "get_publication",
+        description: "Get the current publication settings and details.",
+        inputSchema: zodToJsonSchema(getPublicationSchema),
+      },
+      {
+        name: "get_user_profile",
+        description: "Get the current user's profile details.",
+        inputSchema: zodToJsonSchema(getUserProfileSchema),
+      },
+      {
+        name: "update_user_profile",
+        description: "Update the user's profile settings (like name, bio, photo_url).",
+        inputSchema: zodToJsonSchema(updateUserProfileSchema),
+      }
     ],
   };
 });
@@ -51,6 +105,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return {
           content: [{type: "text", text: JSON.stringify(result, null, 2)}],
         };
+      }
+      case "update_publication": {
+        const result = await updatePublicationHandler(args);
+        return {
+          content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+        };
+      }
+      
+      case "get_drafts": {
+        const result = await getDraftsHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_published_posts": {
+        const result = await getPublishedPostsHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "delete_draft": {
+        const result = await deleteDraftHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "publish_draft": {
+        const result = await publishDraftHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      
+      case "get_publication": {
+        const result = await getPublicationHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "get_user_profile": {
+        const result = await getUserProfileHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
+      }
+      case "update_user_profile": {
+        const result = await updateUserProfileHandler(args);
+        return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       default:
         throw new Error(`Unknown tool: ${name}`);
