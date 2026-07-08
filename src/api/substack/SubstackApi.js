@@ -198,4 +198,28 @@ export default class SubstackApi {
     const response = await this.session.post(url, { body });
     return SubstackApi.handleResponse(response);
   }
+
+  // Notes authored by a user live on GET /reader/feed/profile/{user_id}.
+  // Filter items where type=comment and context.type=note (confirmed via yarn explore on /profile/{id}).
+  async getUserNotes(userId, { cursor, limit = 20 } = {}) {
+    const notes = [];
+    let nextCursor = cursor;
+
+    while (notes.length < limit) {
+      const page = await this.getProfileFeed(userId, { cursor: nextCursor, limit: 50 });
+      for (const item of page.items ?? []) {
+        if (item.type === "comment" && item.context?.type === "note" && item.comment) {
+          notes.push(item);
+          if (notes.length >= limit) break;
+        }
+      }
+      nextCursor = page.nextCursor ?? null;
+      if (!nextCursor || notes.length >= limit) break;
+    }
+
+    return {
+      items: notes.slice(0, limit),
+      next_cursor: nextCursor,
+    };
+  }
 }

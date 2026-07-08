@@ -11,6 +11,10 @@ An MCP (Model Context Protocol) server exposing 23 tools for automating a Substa
 - `yarn start` — run the MCP server over stdio (`node src/index.js`)
 - `yarn install --frozen-lockfile` — install deps (same command used in Dockerfile and CI)
 - `yarn explore [/path] [--headless]` — API explorer: launches Chromium with your session cookies injected and logs every non-GET `/api/` request (method, URL, payload) to the terminal. Use it to reverse-engineer new Substack endpoints before writing a tool. Defaults to `/publish/settings`.
+- `yarn test:note` — integration test for `create_note`
+- `yarn test:reader` — smoke test for reader feed tools
+
+MCP **resources** (via `resources/list` + `resources/read`): `substack://catalog`, `substack://catalog/zh-TW`, `substack://setup`, `substack://guides/prosemirror`. Defined in `src/resources/catalog.js`.
 
 There are no test/lint/build scripts. Node version: v22.15.0 (`.nvmrc`).
 
@@ -23,7 +27,7 @@ Substack has no public API — everything here rides on undocumented internal en
 1. **REST via axios** (`src/api/substack/SubstackApi.js`) — used by almost all tools. The auth cookie is `substack.sid=<token>; connect.sid=<token>;` (same token in both). Two base URLs matter:
    - `<publication_url>/api/v1/...` — publication-scoped endpoints (drafts, posts, tags, publication settings)
    - `https://substack.com/api/v1/...` (`base_url`) — user-scoped endpoints (profile)
-2. **Playwright browser automation** — only for `create_note` (`src/tools/create_note.js`). Substack blocks the Notes API for scripts, so this tool drives a headless Chromium through the real composer UI (click "What's on your mind?", type, click Post). `create_short_post` is the REST-only alternative: it creates and immediately publishes a title-only draft that behaves like a Note on the publication feed (dummy title `'Solo Quant Quick Thought'` — deliberately not `'.'`, which broke Activity-feed rendering).
+2. **Playwright browser automation** — only for `create_note` and `reply_to_note` (`src/tools/create_note.js`, `src/tools/reply_to_note.js`). Substack blocks the Notes API for scripts, so these tools drive headless Chromium through the real UI path (playwright-extra + stealth + `cf_clearance` + in-page fetch).
 
 ### Request flow
 
@@ -38,7 +42,7 @@ Substack has no public API — everything here rides on undocumented internal en
 
 ### Post bodies are ProseMirror JSON, not Markdown
 
-Draft/post `body` must be a ProseMirror doc (`{"type":"doc","content":[...]}`) serialized with `JSON.stringify` before hitting the API (see `SubstackPost.getDraft()` and `create_short_post.js`). Inline marks (`strong`, `em`, `code`, `link` with `attrs.href`) go on `type: "text"` nodes — never as top-level node types; getting this wrong crashes the Substack editor. `src/api/substack/SubstackPost.js` is a builder class for these docs (paragraphs, headings, lists, images, buttons, paywall) — note it contains hardcoded Quickview-newsletter helper sections (`addHeader`, `becamePremiumMember`, `addFooter`) specific to the original author's publication.
+Draft/post `body` must be a ProseMirror doc (`{"type":"doc","content":[...]}`) serialized with `JSON.stringify` before hitting the API (see `SubstackPost.getDraft()` and `create_draft_post.js`). Inline marks (`strong`, `em`, `code`, `link` with `attrs.href`) go on `type: "text"` nodes — never as top-level node types; getting this wrong crashes the Substack editor. `src/api/substack/SubstackPost.js` is a builder class for these docs (paragraphs, headings, lists, images, buttons, paywall) — note it contains hardcoded Quickview-newsletter helper sections (`addHeader`, `becamePremiumMember`, `addFooter`) specific to the original author's publication.
 
 ## Release
 

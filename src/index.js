@@ -5,6 +5,8 @@ import {StdioServerTransport} from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import {z} from "zod";
 import {zodToJsonSchema} from "zod-to-json-schema";
@@ -14,9 +16,9 @@ import {getPublicationSchema, getPublicationHandler} from "./tools/get_publicati
 import {getUserProfileSchema, getUserProfileHandler} from "./tools/get_user_profile.js";
 import {updateUserProfileSchema, updateUserProfileHandler} from "./tools/update_user_profile.js";
 import {updatePaymentSettingsSchema, updatePaymentSettingsHandler} from "./tools/update_payment_settings.js";
-import {createShortPostSchema, createShortPostHandler} from "./tools/create_short_post.js";
 import {getStatsSchema, getStatsHandler} from "./tools/get_stats.js";
 import {createNoteSchema, createNoteHandler} from "./tools/create_note.js";
+import {getUserNotesSchema, getUserNotesHandler} from "./tools/get_user_notes.js";
 import {getPostTagsSchema, getPostTagsHandler} from "./tools/get_post_tags.js";
 import {addTagToPostSchema, addTagToPostHandler} from "./tools/add_tag_to_post.js";
 
@@ -33,6 +35,7 @@ import {replyToNoteSchema, replyToNoteHandler} from "./tools/reply_to_note.js";
 import {restackItemSchema, restackItemHandler} from "./tools/restack_item.js";
 import {getPostCommentsSchema, getPostCommentsHandler} from "./tools/get_post_comments.js";
 import {commentOnPostSchema, commentOnPostHandler} from "./tools/comment_on_post.js";
+import {listResources, readResource} from "./resources/catalog.js";
 
 
 // Create an MCP server
@@ -52,6 +55,21 @@ const server = new Server({
 if (!process.env.SUBSTACK_PUBLICATION_URL || !process.env.SUBSTACK_SESSION_TOKEN || !process.env.SUBSTACK_USER_ID) {
   throw new Error("SUBSTACK_PUBLICATION_URL, SUBSTACK_SESSION_TOKEN and SUBSTACK_USER_ID must be set");
 }
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: listResources(),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+  const content = readResource(uri);
+  if (!content) {
+    throw new Error(`Unknown resource: ${uri}`);
+  }
+  return {
+    contents: [{ uri, mimeType: content.mimeType, text: content.text }],
+  };
+});
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -117,19 +135,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: zodToJsonSchema(updatePaymentSettingsSchema),
       },
       {
-        name: "create_short_post",
-        description: "Create and publish a short post (acts identically to a Note on your publication feed).",
-        inputSchema: zodToJsonSchema(createShortPostSchema),
+        name: "create_note",
+        description: "Create and publish a genuine Substack Note to the global feed.",
+        inputSchema: zodToJsonSchema(createNoteSchema),
+      },
+      {
+        name: "get_user_notes",
+        description: "List Notes authored by a user (from their profile activity feed).",
+        inputSchema: zodToJsonSchema(getUserNotesSchema),
       },
       {
         name: "get_stats",
         description: "Get the latest statistics for your publication (subscriber count and growth attribution).",
         inputSchema: zodToJsonSchema(getStatsSchema),
-      },
-      {
-        name: "create_note",
-        description: "Create and publish a genuine Substack Note to the global feed.",
-        inputSchema: zodToJsonSchema(createNoteSchema),
       }
 
       ,{
@@ -236,8 +254,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const result = await updatePaymentSettingsHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
-      case "create_short_post": {
-        const result = await createShortPostHandler(args);
+      case "get_user_notes": {
+        const result = await getUserNotesHandler(args);
         return { content: [{type: "text", text: JSON.stringify(result, null, 2)}] };
       }
       case "get_stats": {

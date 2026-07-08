@@ -7,6 +7,17 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 
 ## 🛠 Available Tools (23 Tools)
 
+Use **`resources/list`** to discover capability docs without calling each tool. Key resources:
+
+| URI | Description |
+|-----|-------------|
+| `substack://catalog` | Full tool catalog (English) |
+| `substack://catalog/zh-TW` | 完整功能目錄（繁體中文） |
+| `substack://setup` | Environment variables and auth |
+| `substack://guides/prosemirror` | Post body format guide |
+
+Fetch content with **`resources/read`** and the URI above.
+
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
 ### Posts & Drafts Management
@@ -15,7 +26,8 @@ This server exposes undocumented Substack internal APIs to allow full automation
 |-----------|-------------|--------|
 | **`create_draft_post`** | Creates a new draft post in your publication. | `title` (string)<br>`subtitle` (string)<br>`body` (string, ProseMirror JSON)<br>*(Markdown must be converted to ProseMirror AST)* |
 | **`get_drafts`** | Retrieves a paginated list of all unpublished drafts. | `offset` (number, opt)<br>`limit` (number, opt) |
-| **`create_short_post`** | Creates and instantly publishes a short-form post (acting exactly like a Substack Note). | `body` (string)<br>`hide_from_feed` (boolean) |
+| **`create_note`** | Creates and publishes a Note to the global Substack Notes feed. | `body` (string) |
+| **`get_user_notes`** | Lists Notes authored by a user (from profile activity). | `user_id` (number, opt)<br>`cursor` (string, opt)<br>`limit` (number, opt) |
 | **`get_published_posts`** | Retrieves a paginated list of all currently published posts. | `offset` (number, opt)<br>`limit` (number, opt) |
 | **`publish_draft`** | Publishes a specific draft immediately to your audience. | `draftId` (string/number)<br>`send` (boolean, def: true)<br>`share_automatically` (boolean, def: false) |
 | **`delete_draft`** | Deletes a specific draft permanently. | `draftId` (string/number) |
@@ -53,7 +65,7 @@ This server exposes undocumented Substack internal APIs to allow full automation
 
 
 ## 🧠 Guideline for LLMs: Converting Markdown to ProseMirror JSON
-Substack's API strictly requires the `body` to be a serialized ProseMirror JSON object. **Do not send raw Markdown.** When using `create_draft_post` or `create_short_post`, the AI must construct the JSON AST.
+Substack's API strictly requires the `body` to be a serialized ProseMirror JSON object. **Do not send raw Markdown.** When using `create_draft_post`, the AI must construct the JSON AST.
 
 **Example AST Construction:**
 ```json
