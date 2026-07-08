@@ -1,109 +1,176 @@
 # Substack MCP Server
 
-A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabling LLM clients to interact with Substack's API for automations like creating posts, managing drafts, and more.
+A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabling LLM clients to interact with Substack's API for automations like creating posts, managing drafts, updating profiles, and more.
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcomoauro/substack-mcp.svg)](https://hub.docker.com/r/marcomoauro/substack-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/substack-mcp.svg)](https://www.npmjs.com/package/substack-mcp)
 
-## 🛠 Available Tools
+## 🛠 Available Tools (11 Tools)
 
+This server exposes undocumented Substack internal APIs to allow full automation of your publication.
+
+### Posts & Drafts Management
 <details>
-<summary><strong>create_draft_post</strong> - Create a draft post</summary>
+<summary><strong>create_draft_post</strong> - Create a new draft post</summary>
 
 **Inputs**:
 - `title` (string): Title of the post
 - `subtitle` (string): Subtitle of the post
-- `body` (string): Body of the post
-
-**Returns**: "OK" if the post was created successfully.
+- `body` (string): Body of the post (ProseMirror JSON string format)
 </details>
 
-### 📋 Requirements
+<details>
+<summary><strong>get_drafts</strong> - Get a list of drafts</summary>
 
-- Substack tokens, follow my [guide](https://implementing.substack.com/p/mcp-server-for-substack) to obtain them:
-    - Session token
-    - Publication URL
-    - User ID
-- An LLM client that supports Model Context Protocol (MCP), such as Claude Desktop, Cursors, or GitHub Copilot
-- Docker
+**Inputs**:
+- `offset` (number, optional): Skip items
+- `limit` (number, optional): Max items to return
+</details>
 
-### 🔌 Installation
+<details>
+<summary><strong>get_published_posts</strong> - Get a list of published posts</summary>
 
-#### Introduction
-The installation process is standardized across all MCP clients. It involves manually adding a configuration object to your client's MCP configuration JSON file.
-> If you're unsure how to configure an MCP with your client, please refer to your MCP client's official documentation.
+**Inputs**:
+- `offset` (number, optional): Skip items
+- `limit` (number, optional): Max items to return
+</details>
 
-#### 🧩 Engines
+<details>
+<summary><strong>publish_draft</strong> - Publish a draft immediately</summary>
 
-<summary><strong>Option 1: Using NPX</strong></summary>
+**Inputs**:
+- `draftId` (string | number): The ID of the draft
+- `send` (boolean, optional): Send email to subscribers (default: true)
+- `share_automatically` (boolean, optional): Share to Substack Note / Twitter (default: false)
+</details>
 
-This option requires Node.js to be installed on your system.
+<details>
+<summary><strong>delete_draft</strong> - Delete a specific draft</summary>
 
-1. Add the following to your MCP configuration file:
+**Inputs**:
+- `draftId` (string | number): The ID of the draft to delete
+</details>
+
+### Tags Management
+<details>
+<summary><strong>get_post_tags</strong> - Get all tags</summary>
+
+**Inputs**: None
+</details>
+
+<details>
+<summary><strong>add_tag_to_post</strong> - Apply a tag to a post (auto-creates if missing)</summary>
+
+**Inputs**:
+- `postId` (string | number): Post ID (draft or published)
+- `tagName` (string): The name of the tag
+</details>
+
+### Profile & Publication Settings
+<details>
+<summary><strong>get_publication</strong> - Get detailed publication settings</summary>
+
+**Inputs**: None (Retrieves info for the publication in ENV)
+</details>
+
+<details>
+<summary><strong>update_publication</strong> - Update publication profile</summary>
+
+**Inputs**:
+- `name` (string, optional): Publication name
+- `hero_text` (string, optional): Publication description
+- `logo_url` (string, optional): Logo image URL
+</details>
+
+<details>
+<summary><strong>get_user_profile</strong> - Get user profile details</summary>
+
+**Inputs**: None
+</details>
+
+<details>
+<summary><strong>update_user_profile</strong> - Update author user profile</summary>
+
+**Inputs**:
+- `name` (string, optional): Author's display name
+- `bio` (string, optional): Author's short bio
+- `photo_url` (string, optional): Profile picture URL
+</details>
+
+## 📋 Requirements
+
+To use this server, you need three credentials from your Substack account:
+- `SUBSTACK_PUBLICATION_URL`: E.g., `https://your-pub.substack.com`
+- `SUBSTACK_SESSION_TOKEN`: The value of your `substack.sid` cookie.
+- `SUBSTACK_USER_ID`: Your numeric user ID.
+
+## 🔌 Installation (Client Configuration)
+
+### 1. Claude Desktop
+Add this to your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "substack-api": {
-      "command": "npx",
-      "args": ["-y", "substack-mcp@latest"],
+    "substack-mcp": {
+      "command": "node",
+      "args": ["/path/to/substack-mcp/src/index.js"],
       "env": {
-        "SUBSTACK_PUBLICATION_URL": "<YOUR_PUBLICATION_URL>",
-        "SUBSTACK_SESSION_TOKEN": "<YOUR_SESSION_TOKEN>",
-        "SUBSTACK_USER_ID": "<YOUR_USER_ID>"
+        "SUBSTACK_PUBLICATION_URL": "https://your.substack.com",
+        "SUBSTACK_SESSION_TOKEN": "your-session-token",
+        "SUBSTACK_USER_ID": "your-user-id"
       }
     }
   }
 }
 ```
 
-2. Replace `<SUBSTACK_PUBLICATION_URL>`, `<YOUR_SESSION_TOKEN>` and `<YOUR_USER_ID>` with your credentials.
+### 2. Cursor
+Open Settings -> Features -> MCP Servers.
+- **Type**: `command`
+- **Name**: `substack-mcp`
+- **Command**: `node /path/to/substack-mcp/src/index.js`
+Alternatively, edit `.cursor/mcp.json` in your workspace. Ensure you set the 3 environment variables in your system or pass them directly.
 
-<summary><strong>Option 2: Using Docker</strong></summary>
+### 3. Hermes Agent
+Add this to your `~/.hermes/config.yaml`:
+```yaml
+mcp_servers:
+  substack:
+    command: node
+    args:
+    - /path/to/substack-mcp/src/index.js
+    env:
+      SUBSTACK_PUBLICATION_URL: https://your.substack.com
+      SUBSTACK_SESSION_TOKEN: your-session-token
+      SUBSTACK_USER_ID: 'your-user-id'
+    enabled: true
+```
 
-This option requires Docker to be installed on your system.
+### 4. Running via NPX / Docker
+If you prefer not to use the local source files, you can use NPX or Docker:
 
-1. Add the following to your MCP configuration file:
+**NPX:**
 ```json
 {
-  "mcpServers": {
-    "substack-api": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "SUBSTACK_PUBLICATION_URL",
-        "-e",
-        "SUBSTACK_SESSION_TOKEN",
-        "-e",
-        "SUBSTACK_USER_ID",
-        "marcomoauro/substack-mcp:latest"
-      ],
-      "env": {
-        "SUBSTACK_PUBLICATION_URL": "<YOUR_PUBLICATION_URL>",
-        "SUBSTACK_SESSION_TOKEN": "<YOUR_SESSION_TOKEN>",
-        "SUBSTACK_USER_ID": "<YOUR_USER_ID>"
-      }
-    }
-  }
+  "command": "npx",
+  "args": ["-y", "substack-mcp@latest"]
 }
 ```
 
-2. Replace `<SUBSTACK_PUBLICATION_URL>`, `<YOUR_SESSION_TOKEN>` and `<YOUR_USER_ID>` with your credentials.
+**Docker:**
+```json
+{
+  "command": "docker",
+  "args": ["run", "-i", "--rm", "-e", "SUBSTACK_PUBLICATION_URL", "-e", "SUBSTACK_SESSION_TOKEN", "-e", "SUBSTACK_USER_ID", "marcomoauro/substack-mcp:latest"]
+}
+```
 
-## 💻 Popular Clients that supports MCPs
-
-> For a complete list of MCP clients and their feature support, visit the [official MCP clients page](https://modelcontextprotocol.io/clients).
-
-| Client                                                                                                         | Description |
-|----------------------------------------------------------------------------------------------------------------|-------------|
-| [Claude Desktop](https://claude.ai/download)                                                                   | Desktop application for Claude AI |
-| [Cursor](https://www.cursor.com/)                                                                              | AI-first code editor |
-| [Cline for VS Code](https://github.com/cline/cline)                                                            | VS Code extension for AI assistance |
-| [GitHub Copilot MCP](https://github.com/VikashLoomba/copilot-mcp)                                              | VS Code extension for GitHub Copilot MCP integration |
-| [Windsurf](https://windsurf.com/editor)                                                                        | AI-powered code editor and development environment |
+## 🛠 Advanced: API Explorer
+This project contains an interactive tool to reverse-engineer new Substack API endpoints:
+```bash
+yarn explore /publish/settings
+```
+It launches a Chromium browser with your injected tokens. Any configuration change you make will log the exact API payload and URL to your terminal, allowing you to easily build new MCP tools.
 
 ## 🆘 Support
-
-- For issues with this MCP Server: Open an issue on [GitHub](https://github.com/marcomoauro/substack-mcp/issues)
+For issues with this MCP Server: Open an issue on [GitHub](https://github.com/marcomoauro/substack-mcp/issues).
