@@ -10,92 +10,30 @@ A Model Context Protocol (MCP) Server for [Substack](https://substack.com) enabl
 This server exposes undocumented Substack internal APIs to allow full automation of your publication.
 
 ### Posts & Drafts Management
-<details>
-<summary><strong>create_draft_post</strong> - Create a new draft post</summary>
 
-**Inputs**:
-- `title` (string): Title of the post
-- `subtitle` (string): Subtitle of the post
-- `body` (string): Body of the post (ProseMirror JSON string format)
-</details>
-
-<details>
-<summary><strong>get_drafts</strong> - Get a list of drafts</summary>
-
-**Inputs**:
-- `offset` (number, optional): Skip items
-- `limit` (number, optional): Max items to return
-</details>
-
-<details>
-<summary><strong>get_published_posts</strong> - Get a list of published posts</summary>
-
-**Inputs**:
-- `offset` (number, optional): Skip items
-- `limit` (number, optional): Max items to return
-</details>
-
-<details>
-<summary><strong>publish_draft</strong> - Publish a draft immediately</summary>
-
-**Inputs**:
-- `draftId` (string | number): The ID of the draft
-- `send` (boolean, optional): Send email to subscribers (default: true)
-- `share_automatically` (boolean, optional): Share to Substack Note / Twitter (default: false)
-</details>
-
-<details>
-<summary><strong>delete_draft</strong> - Delete a specific draft</summary>
-
-**Inputs**:
-- `draftId` (string | number): The ID of the draft to delete
-</details>
+| Tool Name | Description | Inputs |
+|-----------|-------------|--------|
+| **`create_draft_post`** | Creates a new draft post in your publication. | `title` (string)<br>`subtitle` (string)<br>`body` (string, ProseMirror JSON) |
+| **`get_drafts`** | Retrieves a paginated list of all unpublished drafts. | `offset` (number, opt)<br>`limit` (number, opt) |
+| **`get_published_posts`** | Retrieves a paginated list of all currently published posts. | `offset` (number, opt)<br>`limit` (number, opt) |
+| **`publish_draft`** | Publishes a specific draft immediately to your audience. | `draftId` (string/number)<br>`send` (boolean, def: true)<br>`share_automatically` (boolean, def: false) |
+| **`delete_draft`** | Deletes a specific draft permanently. | `draftId` (string/number) |
 
 ### Tags Management
-<details>
-<summary><strong>get_post_tags</strong> - Get all tags</summary>
 
-**Inputs**: None
-</details>
-
-<details>
-<summary><strong>add_tag_to_post</strong> - Apply a tag to a post (auto-creates if missing)</summary>
-
-**Inputs**:
-- `postId` (string | number): Post ID (draft or published)
-- `tagName` (string): The name of the tag
-</details>
+| Tool Name | Description | Inputs |
+|-----------|-------------|--------|
+| **`get_post_tags`** | Retrieves all available custom tags created in your publication. | *None* |
+| **`add_tag_to_post`** | Applies a tag to a post. Automatically creates the tag first if it does not exist. | `postId` (string/number)<br>`tagName` (string) |
 
 ### Profile & Publication Settings
-<details>
-<summary><strong>get_publication</strong> - Get detailed publication settings</summary>
 
-**Inputs**: None (Retrieves info for the publication in ENV)
-</details>
-
-<details>
-<summary><strong>update_publication</strong> - Update publication profile</summary>
-
-**Inputs**:
-- `name` (string, optional): Publication name
-- `hero_text` (string, optional): Publication description
-- `logo_url` (string, optional): Logo image URL
-</details>
-
-<details>
-<summary><strong>get_user_profile</strong> - Get user profile details</summary>
-
-**Inputs**: None
-</details>
-
-<details>
-<summary><strong>update_user_profile</strong> - Update author user profile</summary>
-
-**Inputs**:
-- `name` (string, optional): Author's display name
-- `bio` (string, optional): Author's short bio
-- `photo_url` (string, optional): Profile picture URL
-</details>
+| Tool Name | Description | Inputs |
+|-----------|-------------|--------|
+| **`get_publication`** | Gets detailed settings and statistics of your publication (name, bio, features, etc). | *None* |
+| **`update_publication`** | Updates your publication's public profile and metadata. | `name` (string, opt)<br>`hero_text` (string, opt)<br>`logo_url` (string, opt) |
+| **`get_user_profile`** | Retrieves the author's personal user profile details. | *None* |
+| **`update_user_profile`** | Updates the author's user profile details (display name, bio, profile picture). | `name` (string, opt)<br>`bio` (string, opt)<br>`photo_url` (string, opt) |
 
 ## 📋 Requirements
 
